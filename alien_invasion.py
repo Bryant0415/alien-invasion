@@ -1,16 +1,16 @@
 # Built-in
-import sys  # For clean program exit
+import sys
 
 # 3rd-party
-import pygame  # Core game development library
+import pygame
 
 # Custom modules
-from settings import Settings  # Game configuration
-from ship import Ship          # Player ship class
+from settings import Settings
+from ship import Ship
+from bullet import Bullet
 
 class AlienInvasion:
     """Main class to manage game assets and overall behavior."""
-
     def __init__(self):
         """Initialize the game, settings, screen, and ship."""
         pygame.init()
@@ -18,44 +18,72 @@ class AlienInvasion:
         self.settings = Settings()
         self.clock = pygame.time.Clock()
 
-        # Set up the display surface
-        self.screen = pygame.display.set_mode((
-            self.settings.screen_width,
-            self.settings.screen_height
-        ))
+        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        self.settings.screen_width = self.screen.get_rect().width
+        self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption("Alien Invasion")
 
-        # Create the player's ship
         self.ship = Ship(self)
+        self.bullets = pygame.sprite.Group()
+
     def run_game(self):
         """Start the main loop for the game."""
         while True:
-            self._check_events()     # Handle input
-            self.ship.update()       # Update ship position
-            self._update_screen()    # Redraw screen
-            self.clock.tick(60)      # Limit FPS
+            self._check_events()
+            self.ship.update()
+            self._update_bullets()
+            self._update_screen()
+            self.clock.tick(60)
+            
     def _check_events(self):
         """Respond to keypresses and mouse events."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RIGHT:
-                    self.ship.moving_right = True
-                elif event.key == pygame.K_LEFT:
-                    self.ship.moving_left = True
-
+                self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_RIGHT:
-                    self.ship.moving_right = False
-                elif event.key == pygame.K_LEFT:
-                    self.ship.moving_left = False
+                self._check_keyup_events(event)
+    
+    def _check_keydown_events(self, event):
+        """Respond to keypresses."""
+        if event.key == pygame.K_RIGHT:
+            self.ship.moving_right = True
+        elif event.key == pygame.K_LEFT:
+            self.ship.moving_left = True
+        elif event.key == pygame.K_q:
+            sys.exit()
+        elif event.key == pygame.K_SPACE:
+            self._fire_bullet()
+    
+    def _check_keyup_events(self, event):
+        """Respond to key releases"""
+        if event.key == pygame.K_RIGHT:
+            self.ship.moving_right = False
+        elif event.key == pygame.K_LEFT:
+            self.ship.moving_left = False
+    def _fire_bullet(self):
+        """Create a new bullet and add it to the bullets group."""
+        if len(self.bullets) < self.settings.bullets_allowed:
+            new_bullet = Bullet(self)
+            self.bullets.add(new_bullet)
+    def _update_bullets(self):
+        """Update position of bullets and get rid of old bullets."""
+        self.bullets.update()
+
+        # Get rid of bullets that have disappeared. 
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
     def _update_screen(self):
-        """Redraw the screen and all game elements."""
         self.screen.fill(self.settings.bg_color)
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet()
         self.ship.blitme()
         pygame.display.flip()
+
+
+
 if __name__ == '__main__':
     ai = AlienInvasion()
     ai.run_game()
