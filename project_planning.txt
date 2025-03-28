@@ -1,3 +1,10 @@
 For the first development phase, we'll make a ship that can move right and left when the player presses
 the arrow keys and fire bullets when the player presses the spacebar. After setting up this behavior,
-we can create the aliens and refine the gameplay. 
+we can create the aliens and refine the gameplay.
+
+For the second development phase, we will add a full fleet of aliens to the top of the screen. 
+Make the fleet move sideways and down until the entire fleet is shot down, an alien hits the ship,
+or an alien reaches the ground. If an alien hits the ship or the ground, we'll destory teh ship and create
+a new fleet. If the entire fleet is show down, we'll create a new fleet. 
+Also, we will limit the number of ships the player can use, and end the game when the player has 
+used up the allotted number of ships. 
