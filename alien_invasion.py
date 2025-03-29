@@ -8,6 +8,7 @@ import pygame
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
+from alien import Alien
 
 class AlienInvasion:
     """Main class to manage game assets and overall behavior."""
@@ -25,6 +26,9 @@ class AlienInvasion:
 
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+
+        self._create_fleet()
 
     def run_game(self):
         """Start the main loop for the game."""
@@ -53,6 +57,8 @@ class AlienInvasion:
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
             sys.exit()
+        elif event.key == pygame.K_ESCAPE:
+            sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
     
@@ -80,9 +86,36 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.ship.blitme()
+        self.aliens.draw(self.screen)
         pygame.display.flip()
 
+    def _create_fleet(self):
+        """Create a triangular fleet of aliens."""
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
 
+        num_rows = 6  # Adjust the number of rows as needed
+        screen_center_x = self.settings.screen_width // 2  # Center point of the screen``
+
+        for row in range(num_rows, 0, -1):  # Start with the widest row at the top
+            num_aliens = row  # Decrease number of aliens per row as we go down
+            row_width = num_aliens * (alien_width * 2)  # Calculate row width
+            start_x = screen_center_x - (row_width // 2)  # Center row horizontally
+            y_position = (num_rows - row) * (alien_height * 1.5)  # Stagger rows downward
+
+            for i in range(num_aliens):
+                x_position = start_x + i * (alien_width * 2)
+                self._create_alien(x_position, y_position)
+
+
+
+    def _create_alien(self, x_position, y_position):
+        """Create an alien and place it in the row."""
+        new_alien = Alien(self)
+        new_alien.x = x_position
+        new_alien.rect.x = x_position
+        new_alien.rect.y = y_position
+        self.aliens.add(new_alien)
 
 if __name__ == '__main__':
     ai = AlienInvasion()
